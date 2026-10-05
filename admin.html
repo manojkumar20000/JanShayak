@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>JanSahayak - Admin Dashboard</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+<!-- =========================================
+     HEADER
+========================================= -->
+
+<header class="main-header">
+
+    <div class="logo">
+
+        <h1>
+            JanSahayak
+        </h1>
+
+        <p>
+            Citizen Problem Portal
+        </p>
+
+    </div>
+
+
+    <nav>
+
+        <a href="index.html">
+            Home
+        </a>
+
+        <a href="index.html#report-section">
+            Report Problem
+        </a>
+
+        <a href="index.html#track-section">
+            Track Complaint
+        </a>
+
+
+        <button
+            type="button"
+            onclick="adminLogout()"
+            class="admin-logout-btn"
+        >
+            Logout
+        </button>
+
+    </nav>
+
+</header>
+
+
+
+<!-- =========================================
+     ADMIN DASHBOARD
+========================================= -->
+
+<main class="admin-dashboard">
+
+
+    <div class="admin-title">
+
+        <h1>
+            Admin Dashboard
+        </h1>
+
+        <p>
+            Manage and monitor citizen complaints
+        </p>
+
+    </div>
+
+
+
+    <!-- =========================================
+         DASHBOARD STATS
+    ========================================= -->
+
+    <section class="dashboard-stats">
+
+
+        <div class="stat-card">
+
+            <h3>
+                Total Complaints
+            </h3>
+
+            <p id="totalComplaints">
+                0
+            </p>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <h3>
+                Reported
+            </h3>
+
+            <p id="reportedComplaints">
+                0
+            </p>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <h3>
+                In Progress
+            </h3>
+
+            <p id="progressComplaints">
+                0
+            </p>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <h3>
+                Resolved
+            </h3>
+
+            <p id="resolvedComplaints">
+                0
+            </p>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =========================================
+         ANALYTICS
+    ========================================= -->
+
+    <section class="analytics-section">
+
+        <h2>
+            📊 Complaint Analytics
+        </h2>
+
+
+        <div class="analytics-grid">
+
+
+            <div class="analytics-card">
+
+                <h3>
+                    🛣️ Road
+                </h3>
+
+                <p id="roadCount">
+                    0
+                </p>
+
+            </div>
+
+
+            <div class="analytics-card">
+
+                <h3>
+                    🗑️ Garbage
+                </h3>
+
+                <p id="garbageCount">
+                    0
+                </p>
+
+            </div>
+
+
+            <div class="analytics-card">
+
+                <h3>
+                    💡 Street Light
+                </h3>
+
+                <p id="streetLightCount">
+                    0
+                </p>
+
+            </div>
+
+
+            <div class="analytics-card">
+
+                <h3>
+                    💧 Water
+                </h3>
+
+                <p id="waterCount">
+                    0
+                </p>
+
+            </div>
+
+
+            <div class="analytics-card">
+
+                <h3>
+                    📌 Other
+                </h3>
+
+                <p id="otherCount">
+                    0
+                </p>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =========================================
+             CATEGORY CHART
+        ========================================= -->
+
+        <div class="category-chart">
+
+            <h3>
+                Category Distribution
+            </h3>
+
+
+            <div class="chart-row">
+
+                <span>
+                    Road
+                </span>
+
+                <div class="chart-bar">
+
+                    <div id="roadBar"></div>
+
+                </div>
+
+                <strong id="roadChartNumber">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="chart-row">
+
+                <span>
+                    Garbage
+                </span>
+
+                <div class="chart-bar">
+
+                    <div id="garbageBar"></div>
+
+                </div>
+
+                <strong id="garbageChartNumber">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="chart-row">
+
+                <span>
+                    Street Light
+                </span>
+
+                <div class="chart-bar">
+
+                    <div id="streetLightBar"></div>
+
+                </div>
+
+                <strong id="streetLightChartNumber">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="chart-row">
+
+                <span>
+                    Water
+                </span>
+
+                <div class="chart-bar">
+
+                    <div id="waterBar"></div>
+
+                </div>
+
+                <strong id="waterChartNumber">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="chart-row">
+
+                <span>
+                    Other
+                </span>
+
+                <div class="chart-bar">
+
+                    <div id="otherBar"></div>
+
+                </div>
+
+                <strong id="otherChartNumber">
+                    0
+                </strong>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =========================================
+         SEARCH / FILTER
+    ========================================= -->
+
+    <section class="admin-search-section">
+
+        <h2>
+            🔎 Search Complaints
+        </h2>
+
+
+        <div class="admin-search-box">
+
+
+            <input
+                type="text"
+                id="searchComplaint"
+                placeholder="Search by ID, name, mobile or area"
+                oninput="filterComplaints()"
+            >
+
+
+            <select
+                id="statusFilter"
+                onchange="filterComplaints()"
+            >
+
+                <option value="">
+                    All Status
+                </option>
+
+                <option value="Reported">
+                    Reported
+                </option>
+
+                <option value="In Progress">
+                    In Progress
+                </option>
+
+                <option value="Resolved">
+                    Resolved
+                </option>
+
+            </select>
+
+
+            <select
+                id="categoryFilter"
+                onchange="filterComplaints()"
+            >
+
+                <option value="">
+                    All Categories
+                </option>
+
+                <option value="Road">
+                    Road
+                </option>
+
+                <option value="Garbage">
+                    Garbage
+                </option>
+
+                <option value="Street Light">
+                    Street Light
+                </option>
+
+                <option value="Water">
+                    Water
+                </option>
+
+                <option value="Other">
+                    Other
+                </option>
+
+            </select>
+
+
+            <button
+                type="button"
+                onclick="resetFilters()"
+            >
+                Reset
+            </button>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =========================================
+         ALL COMPLAINTS
+    ========================================= -->
+
+    <section class="admin-complaints">
+
+        <h2>
+            📋 All Complaints
+        </h2>
+
+
+        <div id="adminComplaintList">
+
+            <p>
+                Loading complaints...
+            </p>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =========================================
+         COMPLAINT DETAILS MODAL
+    ========================================= -->
+
+    <div
+        id="complaintDetailsModal"
+        class="complaint-modal"
+    >
+
+
+        <div class="complaint-modal-content">
+
+
+            <div class="complaint-modal-header">
+
+                <h2>
+                    📋 Complaint Details
+                </h2>
+
+
+                <button
+                    type="button"
+                    class="modal-close-btn"
+                    onclick="closeComplaintDetails()"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+
+            <div id="complaintDetailsContent">
+
+                <p>
+                    Loading details...
+                </p>
+
+            </div>
+
+
+
+            <!-- =====================================
+                 STATUS CHANGE
+            ====================================== -->
+
+            <div class="modal-status-section">
+
+
+                <input
+                    type="hidden"
+                    id="modalComplaintId"
+                >
+
+
+                <label for="modalStatus">
+
+                    <strong>
+                        Change Status:
+                    </strong>
+
+                </label>
+
+
+                <select id="modalStatus">
+
+                    <option value="Reported">
+                        Reported
+                    </option>
+
+                    <option value="In Progress">
+                        In Progress
+                    </option>
+
+                    <option value="Resolved">
+                        Resolved
+                    </option>
+
+                </select>
+
+
+                <button
+                    type="button"
+                    onclick="updateComplaintStatusFromModal()"
+                >
+                    Update Status
+                </button>
+
+            </div>
+
+
+
+            <!-- =====================================
+                 MODAL FOOTER
+            ====================================== -->
+
+            <div class="complaint-modal-footer">
+
+                <button
+                    type="button"
+                    class="modal-close-button"
+                    onclick="closeComplaintDetails()"
+                >
+                    Close
+                </button>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</main>
+
+
+
+<!-- =========================================
+     ADMIN AUTHENTICATION
+========================================= -->
+
+<script>
+
+const isAdminLoggedIn =
+    sessionStorage.getItem(
+        "janSahayakAdminLoggedIn"
+    );
+
+
+if (isAdminLoggedIn !== "true") {
+
+    window.location.href =
+        "admin-login.html";
+
+}
+
+
+function adminLogout() {
+
+    sessionStorage.removeItem(
+        "janSahayakAdminLoggedIn"
+    );
+
+
+    window.location.href =
+        "admin-login.html";
+
+}
+
+</script>
+
+
+
+<!-- =========================================
+     ADMIN JAVASCRIPT
+========================================= -->
+
+<script src="admin.js"></script>
+
+
+</body>
+
+</html>

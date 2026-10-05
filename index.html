@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="JanSahayak Citizen Problem Portal - Report local problems and track complaints."
+    >
+
+    <title>JanSahayak - Citizen Problem Portal</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     SUCCESS POPUP / MODAL
+===================================================== -->
+
+<div
+    id="successModal"
+    style="
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.70);
+        z-index: 99999;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        box-sizing: border-box;
+    "
+>
+
+    <div
+        style="
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-sizing: border-box;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+        "
+    >
+
+        <div
+            style="
+                font-size: 65px;
+                margin-bottom: 10px;
+            "
+        >
+            ✅
+        </div>
+
+
+        <h2
+            style="
+                margin: 5px 0 10px;
+                color: #198754;
+                font-size: 28px;
+            "
+        >
+            Complaint Submitted Successfully!
+        </h2>
+
+
+        <p
+            style="
+                color: #555;
+                font-size: 16px;
+                margin-bottom: 20px;
+            "
+        >
+            Your complaint has been registered successfully.
+        </p>
+
+
+        <div id="successModalDetails"></div>
+
+
+        <div
+            style="
+                display: flex;
+                gap: 12px;
+                justify-content: center;
+                flex-wrap: wrap;
+                margin-top: 25px;
+            "
+        >
+
+            <button
+                type="button"
+                onclick="closeSuccessModal()"
+                style="
+                    border: none;
+                    padding: 13px 25px;
+                    border-radius: 9px;
+                    background: #6c757d;
+                    color: white;
+                    font-size: 15px;
+                    font-weight: bold;
+                    cursor: pointer;
+                "
+            >
+                ✖ Close
+            </button>
+
+
+            <button
+                type="button"
+                onclick="
+                    closeSuccessModal();
+                    document.getElementById('track-section').scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                "
+                style="
+                    border: none;
+                    padding: 13px 25px;
+                    border-radius: 9px;
+                    background: #1769aa;
+                    color: white;
+                    font-size: 15px;
+                    font-weight: bold;
+                    cursor: pointer;
+                "
+            >
+                🔎 Track Complaint
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =====================================================
+     HEADER
+===================================================== -->
+
+<header class="main-header">
+
+    <div class="logo">
+
+        <h1>
+            JanSahayak
+        </h1>
+
+        <p>
+            Citizen Problem Portal
+        </p>
+
+    </div>
+
+
+    <nav>
+
+        <a href="#">
+            Home
+        </a>
+
+        <a href="#report-section">
+            Report Problem
+        </a>
+
+        <a href="#track-section">
+            Track Complaint
+        </a>
+
+        <a href="#services">
+            Services
+        </a>
+
+        <a href="#about">
+            About
+        </a>
+
+        <a href="#contact">
+            Contact
+        </a>
+
+        <a
+            href="admin-login.html"
+            class="admin-link"
+        >
+            Admin
+        </a>
+
+    </nav>
+
+</header>
+
+
+
+<!-- =====================================================
+     HERO SECTION
+===================================================== -->
+
+<section class="hero">
+
+    <div class="hero-overlay"></div>
+
+
+    <div class="hero-content">
+
+        <div class="hero-badge">
+            🏛️ Digital Citizen Service
+        </div>
+
+
+        <h2>
+            Your Problem,
+            <br>
+            Our Responsibility
+        </h2>
+
+
+        <p>
+            Report local problems easily, help improve your
+            community and track your complaint status online.
+        </p>
+
+
+        <div class="hero-buttons">
+
+            <button
+                type="button"
+                onclick="document.getElementById('report-section').scrollIntoView({behavior:'smooth'})"
+                class="hero-primary-button"
+            >
+                📝 Report a Problem
+            </button>
+
+
+            <button
+                type="button"
+                onclick="document.getElementById('track-section').scrollIntoView({behavior:'smooth'})"
+                class="hero-secondary-button"
+            >
+                🔎 Track Complaint
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     QUICK FEATURES
+===================================================== -->
+
+<section class="quick-features">
+
+    <div class="quick-feature">
+
+        <div class="quick-icon">
+            📝
+        </div>
+
+        <div>
+
+            <h3>
+                Easy Reporting
+            </h3>
+
+            <p>
+                Report your local problem online.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="quick-feature">
+
+        <div class="quick-icon">
+            🔎
+        </div>
+
+        <div>
+
+            <h3>
+                Easy Tracking
+            </h3>
+
+            <p>
+                Track your complaint using Complaint ID.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="quick-feature">
+
+        <div class="quick-icon">
+            📊
+        </div>
+
+        <div>
+
+            <h3>
+                Status Updates
+            </h3>
+
+            <p>
+                Check the latest complaint status.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     REPORT SECTION
+===================================================== -->
+
+<section
+    id="report-section"
+    class="report-section"
+>
+
+
+    <div class="section-heading">
+
+        <div class="section-heading-icon">
+            📝
+        </div>
+
+        <div>
+
+            <span class="section-label">
+                CITIZEN SERVICE
+            </span>
+
+            <h2>
+                Report a Problem
+            </h2>
+
+            <p>
+                Tell us about a problem in your area.
+            </p>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- OLD SUCCESS MESSAGE -->
+
+    <div
+        id="successMessage"
+        class="success-message"
+    ></div>
+
+
+
+    <!-- =================================================
+         COMPLAINT FORM
+    ================================================== -->
+
+    <form
+        id="complaintForm"
+    >
+
+
+        <!-- PERSONAL INFORMATION -->
+
+        <div class="form-section-title">
+
+            <span>
+                1
+            </span>
+
+            <div>
+
+                <h3>
+                    Citizen Information
+                </h3>
+
+                <p>
+                    Enter your basic contact details.
+                </p>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="form-grid">
+
+
+            <div class="form-group">
+
+                <label for="problemName">
+
+                    Your Name
+                    <span>*</span>
+
+                </label>
+
+
+                <input
+                    type="text"
+                    id="problemName"
+                    placeholder="Enter your full name"
+                    autocomplete="name"
+                    required
+                >
+
+            </div>
+
+
+
+            <div class="form-group">
+
+                <label for="problemMobile">
+
+                    Mobile Number
+                    <span>*</span>
+
+                </label>
+
+
+                <input
+                    type="tel"
+                    id="problemMobile"
+                    placeholder="Enter 10 digit mobile number"
+                    maxlength="10"
+                    inputmode="numeric"
+                    autocomplete="tel"
+                    required
+                >
+
+            </div>
+
+        </div>
+
+
+
+        <!-- PROBLEM INFORMATION -->
+
+        <div class="form-section-title">
+
+            <span>
+                2
+            </span>
+
+            <div>
+
+                <h3>
+                    Problem Information
+                </h3>
+
+                <p>
+                    Provide details about the problem.
+                </p>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="form-grid">
+
+
+            <!-- CATEGORY -->
+
+            <div class="form-group">
+
+                <label for="problemCategory">
+
+                    Problem Category
+                    <span>*</span>
+
+                </label>
+
+
+                <select
+                    id="problemCategory"
+                    required
+                >
+
+                    <option value="">
+                        Select Problem Category
+                    </option>
+
+                    <option value="Road">
+                        🚧 Road Problem
+                    </option>
+
+                    <option value="Garbage">
+                        🗑️ Garbage
+                    </option>
+
+                    <option value="Street Light">
+                        💡 Street Light
+                    </option>
+
+                    <option value="Water">
+                        💧 Water Problem
+                    </option>
+
+                    <option value="Other">
+                        ⚠️ Other
+                    </option>
+
+                </select>
+
+            </div>
+
+
+
+            <!-- LOCATION -->
+
+            <div class="form-group">
+
+                <label for="problemLocation">
+
+                    Area / Location
+                    <span>*</span>
+
+                </label>
+
+
+                <input
+                    type="text"
+                    id="problemLocation"
+                    placeholder="Enter area, locality or landmark"
+                    required
+                >
+
+            </div>
+
+        </div>
+
+
+
+        <!-- DEPARTMENT -->
+
+        <div class="form-grid">
+
+            <div class="form-group">
+
+                <label for="problemDepartment">
+
+                    Responsible Department
+
+                </label>
+
+
+                <input
+                    type="text"
+                    id="problemDepartment"
+                    placeholder="Department will be assigned automatically"
+                    readonly
+                >
+
+
+                <small>
+
+                    The department is automatically assigned
+                    according to the selected problem category.
+
+                </small>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- DESCRIPTION -->
+
+        <div class="form-group">
+
+            <label for="problemDescription">
+
+                Describe the Problem
+                <span>*</span>
+
+            </label>
+
+
+            <textarea
+                id="problemDescription"
+                rows="6"
+                placeholder="Describe the problem clearly..."
+                required
+            ></textarea>
+
+
+            <small>
+
+                Please provide enough information so the problem
+                can be understood easily.
+
+            </small>
+
+        </div>
+
+
+
+        <!-- PHOTO -->
+
+        <div class="form-group">
+
+            <label for="problemPhoto">
+
+                Upload Problem Photo
+
+                <span class="optional">
+                    (Optional)
+                </span>
+
+            </label>
+
+
+            <input
+                type="file"
+                id="problemPhoto"
+                accept="image/*"
+            >
+
+
+            <small>
+
+                A photo can help authorities understand the problem.
+
+            </small>
+
+        </div>
+
+
+
+        <!-- SUBMIT -->
+
+        <div class="form-submit-area">
+
+            <!-- IMPORTANT: type="button" -->
+
+            <button
+                type="button"
+                class="submit-button"
+                onclick="reportProblem()"
+            >
+
+                🚀 Submit Complaint
+
+            </button>
+
+
+            <p>
+
+                After submission, you will receive a unique
+                Complaint ID. Save it for tracking.
+
+            </p>
+
+        </div>
+
+    </form>
+
+</section>
+
+
+
+<!-- =====================================================
+     TRACK COMPLAINT
+===================================================== -->
+
+<section
+    id="track-section"
+    class="track-section"
+>
+
+    <div class="section-heading">
+
+        <div class="section-heading-icon">
+            🔎
+        </div>
+
+        <div>
+
+            <span class="section-label">
+                COMPLAINT TRACKING
+            </span>
+
+            <h2>
+                Track Your Complaint
+            </h2>
+
+            <p>
+                Enter your Complaint ID to check the latest status.
+            </p>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="track-box">
+
+        <div class="track-input-wrapper">
+
+            <span>
+                🔎
+            </span>
+
+            <input
+                type="text"
+                id="trackComplaintId"
+                placeholder="Example: JS123456"
+                autocomplete="off"
+            >
+
+        </div>
+
+
+        <button
+            type="button"
+            onclick="trackComplaint()"
+        >
+
+            Track Complaint
+
+        </button>
+
+    </div>
+
+
+    <p class="tracking-note">
+
+        💡 Your Complaint ID was shown after successful submission.
+
+    </p>
+
+
+    <div id="trackingResult"></div>
+
+</section>
+
+
+
+<!-- =====================================================
+     PRIVATE HISTORY
+===================================================== -->
+
+<section
+    id="history-section"
+    class="history-section"
+>
+
+    <div class="section-heading">
+
+        <div class="section-heading-icon">
+            📋
+        </div>
+
+        <div>
+
+            <span class="section-label">
+                PRIVATE RECORD
+            </span>
+
+            <h2>
+                My Complaint History
+            </h2>
+
+            <p>
+                View complaints submitted from this browser.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div id="complaintHistory">
+
+        <div class="no-history">
+
+            <div class="empty-icon">
+                📭
+            </div>
+
+            <h3>
+                No Complaint History
+            </h3>
+
+            <p>
+                Your submitted complaints will appear here.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     SERVICES
+===================================================== -->
+
+<section
+    id="services"
+    class="services"
+>
+
+
+    <div class="section-title">
+
+        <span>
+            🛠️ OUR SERVICES
+        </span>
+
+        <h2>
+            What Can You Report?
+        </h2>
+
+        <p>
+            Report common problems affecting your local community.
+        </p>
+
+    </div>
+
+
+
+    <div class="service-container">
+
+
+        <div class="service-card">
+
+            <div class="icon">
+                🚧
+            </div>
+
+            <h3>
+                Road Problems
+            </h3>
+
+            <p>
+                Report damaged roads, potholes and unsafe road conditions.
+            </p>
+
+        </div>
+
+
+
+        <div class="service-card">
+
+            <div class="icon">
+                🗑️
+            </div>
+
+            <h3>
+                Garbage
+            </h3>
+
+            <p>
+                Report garbage collection and cleanliness problems.
+            </p>
+
+        </div>
+
+
+
+        <div class="service-card">
+
+            <div class="icon">
+                💡
+            </div>
+
+            <h3>
+                Street Light
+            </h3>
+
+            <p>
+                Report damaged or non-working street lights.
+            </p>
+
+        </div>
+
+
+
+        <div class="service-card">
+
+            <div class="icon">
+                💧
+            </div>
+
+            <h3>
+                Water Problem
+            </h3>
+
+            <p>
+                Report water supply and related local problems.
+            </p>
+
+        </div>
+
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     HOW IT WORKS
+===================================================== -->
+
+<section class="how-it-works">
+
+    <div class="section-title">
+
+        <span>
+            HOW IT WORKS
+        </span>
+
+        <h2>
+            Simple 4-Step Process
+        </h2>
+
+    </div>
+
+
+    <div class="steps-container">
+
+
+        <div class="process-step">
+
+            <div class="step-number">
+                1
+            </div>
+
+            <h3>
+                Report
+            </h3>
+
+            <p>
+                Submit details about your local problem.
+            </p>
+
+        </div>
+
+
+
+        <div class="process-step">
+
+            <div class="step-number">
+                2
+            </div>
+
+            <h3>
+                Complaint ID
+            </h3>
+
+            <p>
+                Receive a unique Complaint ID.
+            </p>
+
+        </div>
+
+
+
+        <div class="process-step">
+
+            <div class="step-number">
+                3
+            </div>
+
+            <h3>
+                Track
+            </h3>
+
+            <p>
+                Check your complaint status online.
+            </p>
+
+        </div>
+
+
+
+        <div class="process-step">
+
+            <div class="step-number">
+                4
+            </div>
+
+            <h3>
+                Resolution
+            </h3>
+
+            <p>
+                Monitor the complaint until resolution.
+            </p>
+
+        </div>
+
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     ABOUT
+===================================================== -->
+
+<section
+    id="about"
+    class="about"
+>
+
+    <div class="about-content">
+
+        <span>
+            ABOUT JANSAHAYAK
+        </span>
+
+        <h2>
+            Technology for a Better Society
+        </h2>
+
+        <p>
+
+            JanSahayak is a digital citizen problem portal designed
+            to make it easier for citizens to report local problems,
+            monitor complaint status and stay informed about progress.
+
+        </p>
+
+
+        <div class="about-points">
+
+            <div>
+                ✓ Easy complaint reporting
+            </div>
+
+            <div>
+                ✓ Complaint ID based tracking
+            </div>
+
+            <div>
+                ✓ Automatic department assignment
+            </div>
+
+            <div>
+                ✓ Status updates
+            </div>
+
+            <div>
+                ✓ Private browser history
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     CONTACT
+===================================================== -->
+
+<section
+    id="contact"
+    class="contact"
+>
+
+    <div class="contact-container">
+
+        <span>
+            CONTACT
+        </span>
+
+        <h2>
+            Citizen Support
+        </h2>
+
+        <p>
+            For portal-related assistance, contact JanSahayak support.
+        </p>
+
+        <div class="contact-card">
+
+            <div>
+                📧
+            </div>
+
+            <div>
+
+                <strong>
+                    Email Support
+                </strong>
+
+                <p>
+                    support@jansahayak.com
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     FOOTER
+===================================================== -->
+
+<footer>
+
+    <div class="footer-content">
+
+        <div>
+
+            <h3>
+                JanSahayak
+            </h3>
+
+            <p>
+                Citizen Problem Portal
+            </p>
+
+        </div>
+
+
+        <div>
+
+            <p>
+                Technology for a Better Society
+            </p>
+
+            <p>
+                © 2026 JanSahayak
+            </p>
+
+        </div>
+
+    </div>
+
+</footer>
+
+
+
+<script src="script.js"></script>
+
+
+</body>
+
+</html>

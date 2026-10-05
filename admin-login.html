@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>JanSahayak Admin Login</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+<div class="admin-login-page">
+
+
+    <div class="admin-login-card">
+
+
+        <h1>
+            🏛️ JanSahayak
+        </h1>
+
+
+        <p>
+            Admin Login
+        </p>
+
+
+        <form id="adminLoginForm">
+
+
+            <label for="adminUsername">
+                Admin Username
+            </label>
+
+
+            <input
+                type="text"
+                id="adminUsername"
+                placeholder="Enter username"
+                required
+            >
+
+
+            <label for="adminPassword">
+                Admin Password
+            </label>
+
+
+            <input
+                type="password"
+                id="adminPassword"
+                placeholder="Enter password"
+                required
+            >
+
+
+            <button type="submit">
+                🔐 Login
+            </button>
+
+
+        </form>
+
+
+        <p
+            id="loginMessage"
+            class="login-message"
+        ></p>
+
+
+        <a
+            href="index.html"
+            class="back-home"
+        >
+            ← Back to Citizen Portal
+        </a>
+
+
+    </div>
+
+</div>
+
+
+<script>
+
+const loginForm =
+    document.getElementById("adminLoginForm");
+
+
+loginForm.addEventListener(
+    "submit",
+    function(event) {
+
+        event.preventDefault();
+
+
+        const username =
+            document
+                .getElementById("adminUsername")
+                .value
+                .trim();
+
+
+        const password =
+            document
+                .getElementById("adminPassword")
+                .value;
+
+
+        const message =
+            document.getElementById("loginMessage");
+
+
+        /*
+            DEMO ADMIN LOGIN
+
+            Username: admin
+            Password: admin123
+        */
+
+
+        if (
+            username === "admin" &&
+            password === "admin123"
+        ) {
+
+            sessionStorage.setItem(
+                "janSahayakAdminLoggedIn",
+                "true"
+            );
+
+
+            message.textContent =
+                "✅ Login successful!";
+
+
+            message.className =
+                "login-message success";
+
+
+            setTimeout(
+                function() {
+
+                    window.location.href =
+                        "admin.html";
+
+                },
+                500
+            );
+
+        }
+
+        else {
+
+            message.textContent =
+                "❌ Invalid username or password.";
+
+
+            message.className =
+                "login-message error";
+
+        }
+
+    }
+);
+
+</script>
+
+
+</body>
+
+</html>
