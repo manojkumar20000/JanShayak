@@ -554,58 +554,58 @@ function openComplaintDetails(
 
 
     // =================================================
-    //                  PHOTO
-    // =================================================
+```javascript
+//                  PHOTO
+// =================================================
 
-    let photoHTML = "";
+let photoHTML = "";
 
+if (
+    complaint.photo &&
+    complaint.photo.trim() !== ""
+) {
 
-    if (
-        complaint.photoData &&
-        complaint.photoData.trim() !== ""
-    ) {
+    photoHTML = `
 
-        photoHTML = `
+        <div class="admin-photo-section">
 
-            <div class="admin-photo-section">
+            <h3>
+                📸 Complaint Photo
+            </h3>
 
-                <h3>
-                    📸 Complaint Photo
-                </h3>
+            <img
+                src="${complaint.photo}"
+                alt="Complaint Photo"
+                style="
+                    max-width:100%;
+                    max-height:300px;
+                    border-radius:10px;
+                    margin-top:10px;
+                    cursor:pointer;
+                    display:block;
+                "
+                onclick="window.open(this.src, '_blank')"
+            >
 
-                <img
-                    src="${complaint.photoData}"
-                    alt="Complaint Photo"
-                    style="
-                        max-width:100%;
-                        max-height:300px;
-                        border-radius:10px;
-                        margin-top:10px;
-                        cursor:pointer;
-                        display:block;
-                    "
-                    onclick="window.open(this.src, '_blank')"
-                >
+        </div>
 
-            </div>
+    `;
 
-        `;
+} else {
 
-    } else {
+    photoHTML = `
 
-        photoHTML = `
+        <p>
+            <strong>
+                📸 Complaint Photo:
+            </strong>
+            No photo available
+        </p>
 
-            <p>
-                <strong>
-                    📸 Complaint Photo:
-                </strong>
-                No photo available
-            </p>
+    `;
 
-        `;
-
-    }
-
+}
+```
 
     // =================================================
     //              STATUS HISTORY
