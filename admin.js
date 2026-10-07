@@ -19,7 +19,6 @@ async function loadAdminComplaints() {
 
         console.log("ADMIN DATA:", data);
 
-
         if (data.success) {
 
             allComplaints = data.complaints || [];
@@ -69,20 +68,17 @@ function updateDashboardStats() {
     const total =
         allComplaints.length;
 
-
     const reported =
         allComplaints.filter(
             complaint =>
                 complaint.status === "Reported"
         ).length;
 
-
     const progress =
         allComplaints.filter(
             complaint =>
                 complaint.status === "In Progress"
         ).length;
-
 
     const resolved =
         allComplaints.filter(
@@ -317,7 +313,7 @@ function displayComplaints(
 
             <p>
                 <strong>Area:</strong>
-                ${complaint.area || "N/A"}
+                ${complaint.area || complaint.location || "N/A"}
             </p>
 
             <p>
@@ -395,7 +391,9 @@ function filterComplaints() {
 
                 const area =
                     String(
-                        complaint.area || ""
+                        complaint.area ||
+                        complaint.location ||
+                        ""
                     ).toLowerCase();
 
 
@@ -554,58 +552,59 @@ function openComplaintDetails(
 
 
     // =================================================
-```javascript
-//                  PHOTO
-// =================================================
+    //                  PHOTO
+    // =================================================
 
-let photoHTML = "";
+    let photoHTML = "";
 
-if (
-    complaint.photo &&
-    complaint.photo.trim() !== ""
-) {
 
-    photoHTML = `
+    if (
+        complaint.photo &&
+        typeof complaint.photo === "string" &&
+        complaint.photo.trim() !== ""
+    ) {
 
-        <div class="admin-photo-section">
+        photoHTML = `
 
-            <h3>
-                📸 Complaint Photo
-            </h3>
+            <div class="admin-photo-section">
 
-            <img
-                src="${complaint.photo}"
-                alt="Complaint Photo"
-                style="
-                    max-width:100%;
-                    max-height:300px;
-                    border-radius:10px;
-                    margin-top:10px;
-                    cursor:pointer;
-                    display:block;
-                "
-                onclick="window.open(this.src, '_blank')"
-            >
+                <h3>
+                    📸 Complaint Photo
+                </h3>
 
-        </div>
+                <img
+                    src="${complaint.photo}"
+                    alt="Complaint Photo"
+                    style="
+                        max-width:100%;
+                        max-height:300px;
+                        border-radius:10px;
+                        margin-top:10px;
+                        cursor:pointer;
+                        display:block;
+                    "
+                    onclick="window.open(this.src, '_blank')"
+                >
 
-    `;
+            </div>
 
-} else {
+        `;
 
-    photoHTML = `
+    } else {
 
-        <p>
-            <strong>
-                📸 Complaint Photo:
-            </strong>
-            No photo available
-        </p>
+        photoHTML = `
 
-    `;
+            <p>
+                <strong>
+                    📸 Complaint Photo:
+                </strong>
+                No photo available
+            </p>
 
-}
-```
+        `;
+
+    }
+
 
     // =================================================
     //              STATUS HISTORY
@@ -699,9 +698,17 @@ if (
 
         <p>
             <strong>
+                🏢 Department:
+            </strong>
+            ${complaint.department || "N/A"}
+        </p>
+
+
+        <p>
+            <strong>
                 📍 Area:
             </strong>
-            ${complaint.area || "N/A"}
+            ${complaint.area || complaint.location || "N/A"}
         </p>
 
 
