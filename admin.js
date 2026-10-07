@@ -1,4 +1,4 @@
-const BACKEND_URL = "http://127.0.0.1:3000";
+const BACKEND_URL = "https://janshayak-backend.onrender.com";
 
 let allComplaints = [];
 
