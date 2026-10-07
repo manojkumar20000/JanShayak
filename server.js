@@ -5,7 +5,7 @@ const path = require("path");
 
 const app = express();
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
@@ -103,7 +103,6 @@ app.post("/api/complaints", (req, res) => {
             complaint.lastUpdated = new Date().toLocaleString();
         }
 
-        // Status history create
         if (!Array.isArray(complaint.statusHistory)) {
             complaint.statusHistory = [
                 {
@@ -196,7 +195,6 @@ app.put("/api/complaints/:id/status", (req, res) => {
 
     const currentComplaint = complaints[index];
 
-    // Old complaints ke liye history initialize
     if (!Array.isArray(currentComplaint.statusHistory)) {
         currentComplaint.statusHistory = [
             {
@@ -206,7 +204,6 @@ app.put("/api/complaints/:id/status", (req, res) => {
         ];
     }
 
-    // Sirf status change hone par history me add hoga
     if (currentComplaint.status !== newStatus) {
 
         const updatedTime = new Date().toLocaleString();
@@ -243,13 +240,12 @@ app.put("/api/complaints/:id/status", (req, res) => {
     });
 });
 
-app.listen(PORT, "127.0.0.1", () => {
+app.listen(PORT, "0.0.0.0", () => {
     console.log("");
     console.log("=================================");
     console.log("      JANSAHAYAK BACKEND");
     console.log("=================================");
-    console.log("Server running at:");
-    console.log("http://127.0.0.1:3000");
+    console.log("Server running on port:", PORT);
     console.log("Database:");
     console.log(databaseFile);
     console.log("=================================");
