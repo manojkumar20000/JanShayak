@@ -1,53 +1,41 @@
 const express = require("express");
 const cors = require("cors");
-const fs = require("fs");
-const path = require("path");
+const { MongoClient } = require("mongodb");
+require("dotenv").config();
 
 const app = express();
 
 const PORT = process.env.PORT || 3000;
+const MONGODB_URI = process.env.MONGODB_URI;
 
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 
-const databaseFile = path.join(__dirname, "complaints.json");
+let complaintsCollection;
 
-function loadComplaints() {
-    if (!fs.existsSync(databaseFile)) {
-        fs.writeFileSync(databaseFile, "[]", "utf8");
-        return [];
-    }
-
+async function connectDatabase() {
     try {
-        const data = fs.readFileSync(databaseFile, "utf8");
-
-        if (!data.trim()) {
-            return [];
+        if (!MONGODB_URI) {
+            throw new Error("MONGODB_URI environment variable is missing");
         }
 
-        const complaints = JSON.parse(data);
+        const client = new MongoClient(MONGODB_URI);
 
-        return Array.isArray(complaints) ? complaints : [];
+        await client.connect();
 
-    } catch (error) {
-        console.error("Database read error:", error.message);
-        return [];
-    }
-}
+        const db = client.db("jansahayak");
+        complaintsCollection = db.collection("complaints");
 
-function saveComplaints(complaints) {
-    try {
-        fs.writeFileSync(
-            databaseFile,
-            JSON.stringify(complaints, null, 4),
-            "utf8"
-        );
-
-        return true;
+        console.log("=================================");
+        console.log("      MONGODB CONNECTED");
+        console.log("=================================");
+        console.log("Database: jansahayak");
+        console.log("Collection: complaints");
+        console.log("=================================");
 
     } catch (error) {
-        console.error("Database save error:", error.message);
-        return false;
+        console.error("MongoDB connection error:", error.message);
+        process.exit(1);
     }
 }
 
@@ -62,16 +50,29 @@ app.get("/api/test", (req, res) => {
     });
 });
 
-app.get("/api/complaints", (req, res) => {
-    const complaints = loadComplaints();
+app.get("/api/complaints", async (req, res) => {
+    try {
+        const complaints = await complaintsCollection
+            .find({})
+            .sort({ _id: -1 })
+            .toArray();
 
-    res.json({
-        success: true,
-        complaints: complaints
-    });
+        res.json({
+            success: true,
+            complaints: complaints
+        });
+
+    } catch (error) {
+        console.error("Get complaints error:", error.message);
+
+        res.status(500).json({
+            success: false,
+            message: "Failed to get complaints"
+        });
+    }
 });
 
-app.post("/api/complaints", (req, res) => {
+app.post("/api/complaints", async (req, res) => {
     try {
         const complaint = req.body;
 
@@ -82,13 +83,12 @@ app.post("/api/complaints", (req, res) => {
             });
         }
 
-        const complaints = loadComplaints();
+        const existingComplaint =
+            await complaintsCollection.findOne({
+                complaintId: complaint.complaintId
+            });
 
-        const exists = complaints.some(
-            item => item.complaintId === complaint.complaintId
-        );
-
-        if (exists) {
+        if (existingComplaint) {
             return res.status(409).json({
                 success: false,
                 message: "Complaint ID already exists"
@@ -112,16 +112,7 @@ app.post("/api/complaints", (req, res) => {
             ];
         }
 
-        complaints.push(complaint);
-
-        const saved = saveComplaints(complaints);
-
-        if (!saved) {
-            return res.status(500).json({
-                success: false,
-                message: "Complaint save failed"
-            });
-        }
+        await complaintsCollection.insertOne(complaint);
 
         console.log("NEW COMPLAINT:", complaint.complaintId);
 
@@ -141,112 +132,140 @@ app.post("/api/complaints", (req, res) => {
     }
 });
 
-app.get("/api/complaints/:id", (req, res) => {
-    const complaintId = req.params.id.toUpperCase();
+app.get("/api/complaints/:id", async (req, res) => {
+    try {
+        const complaintId = req.params.id.toUpperCase();
 
-    const complaints = loadComplaints();
+        const complaint =
+            await complaintsCollection.findOne({
+                complaintId: {
+                    $regex: `^${complaintId}$`,
+                    $options: "i"
+                }
+            });
 
-    const complaint = complaints.find(
-        item => String(item.complaintId).toUpperCase() === complaintId
-    );
+        if (!complaint) {
+            return res.status(404).json({
+                success: false,
+                message: "Complaint not found"
+            });
+        }
 
-    if (!complaint) {
-        return res.status(404).json({
+        res.json({
+            success: true,
+            complaint: complaint
+        });
+
+    } catch (error) {
+        console.error("Find complaint error:", error.message);
+
+        res.status(500).json({
             success: false,
-            message: "Complaint not found"
+            message: "Server error"
         });
     }
-
-    res.json({
-        success: true,
-        complaint: complaint
-    });
 });
 
-app.put("/api/complaints/:id/status", (req, res) => {
-    const complaintId = req.params.id.toUpperCase();
-    const newStatus = req.body.status;
+app.put("/api/complaints/:id/status", async (req, res) => {
+    try {
+        const complaintId = req.params.id.toUpperCase();
+        const newStatus = req.body.status;
 
-    const allowedStatuses = [
-        "Reported",
-        "In Progress",
-        "Resolved"
-    ];
-
-    if (!allowedStatuses.includes(newStatus)) {
-        return res.status(400).json({
-            success: false,
-            message: "Invalid status"
-        });
-    }
-
-    const complaints = loadComplaints();
-
-    const index = complaints.findIndex(
-        item => String(item.complaintId).toUpperCase() === complaintId
-    );
-
-    if (index === -1) {
-        return res.status(404).json({
-            success: false,
-            message: "Complaint not found"
-        });
-    }
-
-    const currentComplaint = complaints[index];
-
-    if (!Array.isArray(currentComplaint.statusHistory)) {
-        currentComplaint.statusHistory = [
-            {
-                status: currentComplaint.status,
-                date: currentComplaint.lastUpdated
-            }
+        const allowedStatuses = [
+            "Reported",
+            "In Progress",
+            "Resolved"
         ];
-    }
 
-    if (currentComplaint.status !== newStatus) {
+        if (!allowedStatuses.includes(newStatus)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid status"
+            });
+        }
 
-        const updatedTime = new Date().toLocaleString();
+        const currentComplaint =
+            await complaintsCollection.findOne({
+                complaintId: {
+                    $regex: `^${complaintId}$`,
+                    $options: "i"
+                }
+            });
 
-        currentComplaint.status = newStatus;
-        currentComplaint.lastUpdated = updatedTime;
+        if (!currentComplaint) {
+            return res.status(404).json({
+                success: false,
+                message: "Complaint not found"
+            });
+        }
 
-        currentComplaint.statusHistory.push({
-            status: newStatus,
-            date: updatedTime
+        if (!Array.isArray(currentComplaint.statusHistory)) {
+            currentComplaint.statusHistory = [
+                {
+                    status: currentComplaint.status,
+                    date: currentComplaint.lastUpdated
+                }
+            ];
+        }
+
+        if (currentComplaint.status !== newStatus) {
+
+            const updatedTime = new Date().toLocaleString();
+
+            currentComplaint.status = newStatus;
+            currentComplaint.lastUpdated = updatedTime;
+
+            currentComplaint.statusHistory.push({
+                status: newStatus,
+                date: updatedTime
+            });
+
+            await complaintsCollection.updateOne(
+                { _id: currentComplaint._id },
+                {
+                    $set: {
+                        status: currentComplaint.status,
+                        lastUpdated: currentComplaint.lastUpdated,
+                        statusHistory: currentComplaint.statusHistory
+                    }
+                }
+            );
+        }
+
+        console.log(
+            "STATUS UPDATED:",
+            complaintId,
+            "=>",
+            newStatus
+        );
+
+        res.json({
+            success: true,
+            message: "Status updated successfully",
+            complaint: currentComplaint
         });
-    }
 
-    const saved = saveComplaints(complaints);
+    } catch (error) {
+        console.error("Status update error:", error.message);
 
-    if (!saved) {
-        return res.status(500).json({
+        res.status(500).json({
             success: false,
-            message: "Status save failed"
+            message: "Server error"
         });
     }
-
-    console.log(
-        "STATUS UPDATED:",
-        complaintId,
-        "=>",
-        newStatus
-    );
-
-    res.json({
-        success: true,
-        message: "Status updated successfully",
-        complaint: currentComplaint
-    });
 });
 
-app.listen(PORT, "0.0.0.0", () => {
-    console.log("");
-    console.log("=================================");
-    console.log("      JANSAHAYAK BACKEND");
-    console.log("=================================");
-    console.log("Server running on port:", PORT);
-    console.log("Database:");
-    console.log(databaseFile);
-    console.log("=================================");
+connectDatabase().then(() => {
+
+    app.listen(PORT, "0.0.0.0", () => {
+
+        console.log("=================================");
+        console.log("      JANSAHAYAK BACKEND");
+        console.log("=================================");
+        console.log("Server running on port:", PORT);
+        console.log("Database: MongoDB Atlas");
+        console.log("=================================");
+
+    });
+
 });
