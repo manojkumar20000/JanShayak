@@ -557,7 +557,7 @@ async function updateComplaintStatus(complaintId, newStatus) {
             encodeURIComponent(complaintId) +
             "/status",
             {
-                method: "PUT",
+                method: "PATCH",
                 headers: adminHeaders(),
                 body: JSON.stringify({
                     status: newStatus
