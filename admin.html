@@ -2,60 +2,26 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>JanSahayak - Admin Dashboard</title>
 
-    <link
-        rel="stylesheet"
-        href="style.css"
-    >
-
+    <link rel="stylesheet" href="style.css">
 </head>
-
 
 <body>
 
-
-<!-- =========================================
-     HEADER
-========================================= -->
-
 <header class="main-header">
-
     <div class="logo">
-
-        <h1>
-            JanSahayak
-        </h1>
-
-        <p>
-            Citizen Problem Portal
-        </p>
-
+        <h1>JanSahayak</h1>
+        <p>Citizen Problem Portal</p>
     </div>
 
-
     <nav>
-
-        <a href="index.html">
-            Home
-        </a>
-
-        <a href="index.html#report-section">
-            Report Problem
-        </a>
-
-        <a href="index.html#track-section">
-            Track Complaint
-        </a>
-
+        <a href="index.html">Home</a>
+        <a href="index.html#report-section">Report Problem</a>
+        <a href="index.html#track-section">Track Complaint</a>
 
         <button
             type="button"
@@ -64,281 +30,123 @@
         >
             Logout
         </button>
-
     </nav>
-
 </header>
 
 
-
-<!-- =========================================
-     ADMIN DASHBOARD
-========================================= -->
-
 <main class="admin-dashboard">
 
-
     <div class="admin-title">
-
-        <h1>
-            Admin Dashboard
-        </h1>
-
-        <p>
-            Manage and monitor citizen complaints
-        </p>
-
+        <h1>Admin Dashboard</h1>
+        <p>Manage and monitor citizen complaints</p>
     </div>
 
 
-
-    <!-- =========================================
-         DASHBOARD STATS
-    ========================================= -->
+    <!-- DASHBOARD STATS -->
 
     <section class="dashboard-stats">
 
-
         <div class="stat-card">
-
-            <h3>
-                Total Complaints
-            </h3>
-
-            <p id="totalComplaints">
-                0
-            </p>
-
+            <h3>Total Complaints</h3>
+            <p id="totalComplaints">0</p>
         </div>
 
-
         <div class="stat-card">
-
-            <h3>
-                Reported
-            </h3>
-
-            <p id="reportedComplaints">
-                0
-            </p>
-
+            <h3>Pending / Reported</h3>
+            <p id="reportedComplaints">0</p>
         </div>
 
-
         <div class="stat-card">
-
-            <h3>
-                In Progress
-            </h3>
-
-            <p id="progressComplaints">
-                0
-            </p>
-
+            <h3>In Progress</h3>
+            <p id="progressComplaints">0</p>
         </div>
 
-
         <div class="stat-card">
-
-            <h3>
-                Resolved
-            </h3>
-
-            <p id="resolvedComplaints">
-                0
-            </p>
-
+            <h3>Resolved</h3>
+            <p id="resolvedComplaints">0</p>
         </div>
 
     </section>
 
 
-
-    <!-- =========================================
-         ANALYTICS
-    ========================================= -->
+    <!-- ANALYTICS -->
 
     <section class="analytics-section">
 
-        <h2>
-            📊 Complaint Analytics
-        </h2>
-
+        <h2>Complaint Analytics</h2>
 
         <div class="analytics-grid">
 
-
             <div class="analytics-card">
-
-                <h3>
-                    🛣️ Road
-                </h3>
-
-                <p id="roadCount">
-                    0
-                </p>
-
+                <h3>Road</h3>
+                <p id="roadCount">0</p>
             </div>
 
-
             <div class="analytics-card">
-
-                <h3>
-                    🗑️ Garbage
-                </h3>
-
-                <p id="garbageCount">
-                    0
-                </p>
-
+                <h3>Garbage</h3>
+                <p id="garbageCount">0</p>
             </div>
 
-
             <div class="analytics-card">
-
-                <h3>
-                    💡 Street Light
-                </h3>
-
-                <p id="streetLightCount">
-                    0
-                </p>
-
+                <h3>Street Light</h3>
+                <p id="streetLightCount">0</p>
             </div>
 
-
             <div class="analytics-card">
-
-                <h3>
-                    💧 Water
-                </h3>
-
-                <p id="waterCount">
-                    0
-                </p>
-
+                <h3>Water</h3>
+                <p id="waterCount">0</p>
             </div>
 
-
             <div class="analytics-card">
-
-                <h3>
-                    📌 Other
-                </h3>
-
-                <p id="otherCount">
-                    0
-                </p>
-
+                <h3>Other</h3>
+                <p id="otherCount">0</p>
             </div>
 
         </div>
 
 
-
-        <!-- =========================================
-             CATEGORY CHART
-        ========================================= -->
-
         <div class="category-chart">
 
-            <h3>
-                Category Distribution
-            </h3>
-
+            <h3>Category Distribution</h3>
 
             <div class="chart-row">
-
-                <span>
-                    Road
-                </span>
-
+                <span>Road</span>
                 <div class="chart-bar">
-
                     <div id="roadBar"></div>
-
                 </div>
-
-                <strong id="roadChartNumber">
-                    0
-                </strong>
-
+                <strong id="roadChartNumber">0</strong>
             </div>
 
-
             <div class="chart-row">
-
-                <span>
-                    Garbage
-                </span>
-
+                <span>Garbage</span>
                 <div class="chart-bar">
-
                     <div id="garbageBar"></div>
-
                 </div>
-
-                <strong id="garbageChartNumber">
-                    0
-                </strong>
-
+                <strong id="garbageChartNumber">0</strong>
             </div>
 
-
             <div class="chart-row">
-
-                <span>
-                    Street Light
-                </span>
-
+                <span>Street Light</span>
                 <div class="chart-bar">
-
                     <div id="streetLightBar"></div>
-
                 </div>
-
-                <strong id="streetLightChartNumber">
-                    0
-                </strong>
-
+                <strong id="streetLightChartNumber">0</strong>
             </div>
 
-
             <div class="chart-row">
-
-                <span>
-                    Water
-                </span>
-
+                <span>Water</span>
                 <div class="chart-bar">
-
                     <div id="waterBar"></div>
-
                 </div>
-
-                <strong id="waterChartNumber">
-                    0
-                </strong>
-
+                <strong id="waterChartNumber">0</strong>
             </div>
 
-
             <div class="chart-row">
-
-                <span>
-                    Other
-                </span>
-
+                <span>Other</span>
                 <div class="chart-bar">
-
                     <div id="otherBar"></div>
-
                 </div>
-
-                <strong id="otherChartNumber">
-                    0
-                </strong>
-
+                <strong id="otherChartNumber">0</strong>
             </div>
 
         </div>
@@ -346,20 +154,13 @@
     </section>
 
 
-
-    <!-- =========================================
-         SEARCH / FILTER
-    ========================================= -->
+    <!-- SEARCH AND FILTER -->
 
     <section class="admin-search-section">
 
-        <h2>
-            🔎 Search Complaints
-        </h2>
-
+        <h2>Search Complaints</h2>
 
         <div class="admin-search-box">
-
 
             <input
                 type="text"
@@ -368,67 +169,31 @@
                 oninput="filterComplaints()"
             >
 
-
             <select
                 id="statusFilter"
                 onchange="filterComplaints()"
             >
-
-                <option value="">
-                    All Status
-                </option>
-
-                <option value="Reported">
-                    Reported
-                </option>
-
-                <option value="In Progress">
-                    In Progress
-                </option>
-
-                <option value="Resolved">
-                    Resolved
-                </option>
-
+                <option value="">All Statuses</option>
+                <option value="Pending">Pending</option>
+                <option value="Reported">Reported (Old)</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Resolved">Resolved</option>
+                <option value="Rejected">Rejected</option>
             </select>
-
 
             <select
                 id="categoryFilter"
                 onchange="filterComplaints()"
             >
-
-                <option value="">
-                    All Categories
-                </option>
-
-                <option value="Road">
-                    Road
-                </option>
-
-                <option value="Garbage">
-                    Garbage
-                </option>
-
-                <option value="Street Light">
-                    Street Light
-                </option>
-
-                <option value="Water">
-                    Water
-                </option>
-
-                <option value="Other">
-                    Other
-                </option>
-
+                <option value="">All Categories</option>
+                <option value="Road">Road</option>
+                <option value="Garbage">Garbage</option>
+                <option value="Street Light">Street Light</option>
+                <option value="Water">Water</option>
+                <option value="Other">Other</option>
             </select>
 
-
-            <button
-                type="button"
-                onclick="resetFilters()"
-            >
+            <button type="button" onclick="resetFilters()">
                 Reset
             </button>
 
@@ -437,49 +202,32 @@
     </section>
 
 
-
-    <!-- =========================================
-         ALL COMPLAINTS
-    ========================================= -->
+    <!-- ALL COMPLAINTS -->
 
     <section class="admin-complaints">
 
-        <h2>
-            📋 All Complaints
-        </h2>
-
+        <h2>All Complaints</h2>
 
         <div id="adminComplaintList">
-
-            <p>
-                Loading complaints...
-            </p>
-
+            <p>Loading complaints...</p>
         </div>
 
     </section>
 
 
-
-    <!-- =========================================
-         COMPLAINT DETAILS MODAL
-    ========================================= -->
+    <!-- COMPLAINT DETAILS MODAL -->
 
     <div
         id="complaintDetailsModal"
         class="complaint-modal"
+        style="display:none;"
     >
-
 
         <div class="complaint-modal-content">
 
-
             <div class="complaint-modal-header">
 
-                <h2>
-                    📋 Complaint Details
-                </h2>
-
+                <h2>Complaint Details</h2>
 
                 <button
                     type="button"
@@ -492,55 +240,30 @@
             </div>
 
 
-
             <div id="complaintDetailsContent">
-
-                <p>
-                    Loading details...
-                </p>
-
+                <p>Loading details...</p>
             </div>
 
 
-
-            <!-- =====================================
-                 STATUS CHANGE
-            ====================================== -->
+            <!-- STATUS CHANGE -->
 
             <div class="modal-status-section">
-
 
                 <input
                     type="hidden"
                     id="modalComplaintId"
                 >
 
-
                 <label for="modalStatus">
-
-                    <strong>
-                        Change Status:
-                    </strong>
-
+                    <strong>Change Status:</strong>
                 </label>
 
-
                 <select id="modalStatus">
-
-                    <option value="Reported">
-                        Reported
-                    </option>
-
-                    <option value="In Progress">
-                        In Progress
-                    </option>
-
-                    <option value="Resolved">
-                        Resolved
-                    </option>
-
+                    <option value="Pending">Pending</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Resolved">Resolved</option>
+                    <option value="Rejected">Rejected</option>
                 </select>
-
 
                 <button
                     type="button"
@@ -551,11 +274,6 @@
 
             </div>
 
-
-
-            <!-- =====================================
-                 MODAL FOOTER
-            ====================================== -->
 
             <div class="complaint-modal-footer">
 
@@ -569,7 +287,6 @@
 
             </div>
 
-
         </div>
 
     </div>
@@ -577,50 +294,36 @@
 </main>
 
 
-
-<!-- =========================================
-     ADMIN AUTHENTICATION
-========================================= -->
+<!-- ADMIN AUTHENTICATION -->
 
 <script>
+(function () {
+    const loggedIn =
+        sessionStorage.getItem("janSahayakAdminLoggedIn");
 
-const isAdminLoggedIn =
-    sessionStorage.getItem(
-        "janSahayakAdminLoggedIn"
-    );
+    const token =
+        sessionStorage.getItem("janSahayakAdminToken");
 
+    if (loggedIn !== "true" || !token) {
+        sessionStorage.removeItem("janSahayakAdminLoggedIn");
+        sessionStorage.removeItem("janSahayakAdminToken");
 
-if (isAdminLoggedIn !== "true") {
-
-    window.location.href =
-        "admin-login.html";
-
-}
-
+        window.location.replace("admin-login.html");
+    }
+})();
 
 function adminLogout() {
+    sessionStorage.removeItem("janSahayakAdminLoggedIn");
+    sessionStorage.removeItem("janSahayakAdminToken");
 
-    sessionStorage.removeItem(
-        "janSahayakAdminLoggedIn"
-    );
-
-
-    window.location.href =
-        "admin-login.html";
-
+    window.location.replace("admin-login.html");
 }
-
 </script>
 
 
+<!-- Updated filename query helps avoid an old cached copy. -->
 
-<!-- =========================================
-     ADMIN JAVASCRIPT
-========================================= -->
-
-<script src="admin.js"></script>
-
+<script src="admin.js?v=3"></script>
 
 </body>
-
 </html>
