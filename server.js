@@ -1,3 +1,5 @@
+"use strict";
+
 const express = require("express");
 const cors = require("cors");
 const crypto = require("crypto");
@@ -7,22 +9,39 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
-app.use(express.json({ limit: "10mb" }));
+
+app.use(express.json({
+    limit: "10mb"
+}));
 
 const MONGODB_URI = process.env.MONGODB_URI;
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-
 const TOKEN_SECRET = process.env.TOKEN_SECRET;
 
 let complaintsCollection;
-const activeTokens = new Set();
+
+const activeTokens = new Map();
+
+const ALLOWED_STATUSES = [
+    "Pending",
+    "In Progress",
+    "Resolved",
+    "Rejected"
+];
+
+
+// =====================================================
+// TOKEN CREATION
+// =====================================================
 
 function createToken(username) {
+    const expires = Date.now() + 8 * 60 * 60 * 1000;
+
     const payload = Buffer.from(
         JSON.stringify({
             username,
-            expires: Date.now() + 8 * 60 * 60 * 1000
+            expires
         })
     ).toString("base64url");
 
@@ -32,18 +51,29 @@ function createToken(username) {
         .digest("base64url");
 
     const token = payload + "." + signature;
-    activeTokens.add(token);
+
+    activeTokens.set(token, expires);
 
     return token;
 }
 
+
+// =====================================================
+// ADMIN AUTHENTICATION
+// =====================================================
+
 function verifyAdmin(req, res, next) {
     const authorization = req.headers.authorization || "";
+
     const token = authorization.startsWith("Bearer ")
         ? authorization.slice(7)
         : "";
 
-    if (!token || !activeTokens.has(token)) {
+    const expires = activeTokens.get(token);
+
+    if (!token || !expires || expires < Date.now()) {
+        activeTokens.delete(token);
+
         return res.status(401).json({
             success: false,
             message: "Please login again."
@@ -52,6 +82,7 @@ function verifyAdmin(req, res, next) {
 
     try {
         const parts = token.split(".");
+
         if (parts.length !== 2) {
             throw new Error("Invalid token");
         }
@@ -61,12 +92,12 @@ function verifyAdmin(req, res, next) {
             .update(parts[0])
             .digest("base64url");
 
-        const signatureBuffer = Buffer.from(parts[1]);
+        const actualBuffer = Buffer.from(parts[1]);
         const expectedBuffer = Buffer.from(expectedSignature);
 
         if (
-            signatureBuffer.length !== expectedBuffer.length ||
-            !crypto.timingSafeEqual(signatureBuffer, expectedBuffer)
+            actualBuffer.length !== expectedBuffer.length ||
+            !crypto.timingSafeEqual(actualBuffer, expectedBuffer)
         ) {
             throw new Error("Invalid signature");
         }
@@ -77,18 +108,27 @@ function verifyAdmin(req, res, next) {
 
         if (payload.expires < Date.now()) {
             activeTokens.delete(token);
-            throw new Error("Token expired");
+            throw new Error("Expired token");
         }
 
         req.admin = payload;
+
         next();
+
     } catch (error) {
+        activeTokens.delete(token);
+
         return res.status(401).json({
             success: false,
             message: "Invalid or expired login. Please login again."
         });
     }
 }
+
+
+// =====================================================
+// HEALTH CHECK
+// =====================================================
 
 app.get("/", (req, res) => {
     res.send("JanSahayak Backend is Running!");
@@ -100,6 +140,11 @@ app.get("/api/test", (req, res) => {
         message: "JanSahayak API is working"
     });
 });
+
+
+// =====================================================
+// ADMIN LOGIN
+// =====================================================
 
 app.post("/api/admin/login", (req, res) => {
     const { username, password } = req.body || {};
@@ -132,6 +177,11 @@ app.post("/api/admin/login", (req, res) => {
     });
 });
 
+
+// =====================================================
+// SUBMIT COMPLAINT
+// =====================================================
+
 app.post("/api/complaints", async (req, res) => {
     try {
         const {
@@ -156,21 +206,39 @@ app.post("/api/complaints", async (req, res) => {
             });
         }
 
+        const now = new Date();
+
         const complaint = {
-            complaintId: "JS" + Date.now().toString().slice(-8),
+            complaintId: "JS" + crypto.randomBytes(4).toString("hex").toUpperCase(),
+
             citizenName,
             citizenMobile,
+
             category: problemCategory,
             area: problemArea,
             description: problemDescription,
-            photo: problemPhoto || "",
+
+            photo: typeof problemPhoto === "string"
+                ? problemPhoto
+                : "",
+
             status: "Pending",
+
             priority: ["Road", "Water"].includes(problemCategory)
                 ? "High"
                 : ["Garbage", "Street Light"].includes(problemCategory)
                     ? "Medium"
                     : "Low",
-            createdAt: new Date()
+
+            createdAt: now,
+            lastUpdated: now,
+
+            statusHistory: [
+                {
+                    status: "Pending",
+                    date: now.toISOString()
+                }
+            ]
         };
 
         await complaintsCollection.insertOne(complaint);
@@ -180,14 +248,21 @@ app.post("/api/complaints", async (req, res) => {
             message: "Complaint submitted successfully.",
             complaintId: complaint.complaintId
         });
+
     } catch (error) {
         console.error("Complaint submission error:", error);
+
         res.status(500).json({
             success: false,
             message: "Unable to submit complaint."
         });
     }
 });
+
+
+// =====================================================
+// TRACK A COMPLAINT
+// =====================================================
 
 app.get("/api/complaints/:id", async (req, res) => {
     try {
@@ -204,6 +279,7 @@ app.get("/api/complaints/:id", async (req, res) => {
 
         res.json({
             success: true,
+
             complaint: {
                 complaintId: complaint.complaintId,
                 category: complaint.category,
@@ -211,11 +287,14 @@ app.get("/api/complaints/:id", async (req, res) => {
                 description: complaint.description,
                 status: complaint.status,
                 priority: complaint.priority,
-                createdAt: complaint.createdAt
+                createdAt: complaint.createdAt,
+                lastUpdated: complaint.lastUpdated
             }
         });
+
     } catch (error) {
         console.error("Complaint tracking error:", error);
+
         res.status(500).json({
             success: false,
             message: "Unable to track complaint."
@@ -223,19 +302,28 @@ app.get("/api/complaints/:id", async (req, res) => {
     }
 });
 
+
+// =====================================================
+// GET ALL COMPLAINTS - ADMIN ONLY
+// =====================================================
+
 app.get("/api/complaints", verifyAdmin, async (req, res) => {
     try {
         const complaints = await complaintsCollection
             .find({})
-            .sort({ createdAt: -1 })
+            .sort({
+                createdAt: -1
+            })
             .toArray();
 
         res.json({
             success: true,
             complaints
         });
+
     } catch (error) {
         console.error("Fetching complaints error:", error);
+
         res.status(500).json({
             success: false,
             message: "Unable to fetch complaints."
@@ -243,47 +331,73 @@ app.get("/api/complaints", verifyAdmin, async (req, res) => {
     }
 });
 
-app.patch("/api/complaints/:id/status", verifyAdmin, async (req, res) => {
-    try {
-        const { status } = req.body || {};
-        const allowedStatuses = [
-            "Pending",
-            "In Progress",
-            "Resolved",
-            "Rejected"
-        ];
 
-        if (!allowedStatuses.includes(status)) {
-            return res.status(400).json({
+// =====================================================
+// UPDATE COMPLAINT STATUS - ADMIN ONLY
+// =====================================================
+
+app.patch(
+    "/api/complaints/:id/status",
+    verifyAdmin,
+    async (req, res) => {
+        try {
+            const { status } = req.body || {};
+
+            if (!ALLOWED_STATUSES.includes(status)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid complaint status."
+                });
+            }
+
+            const now = new Date();
+
+            const result = await complaintsCollection.updateOne(
+                {
+                    complaintId: req.params.id
+                },
+                {
+                    $set: {
+                        status,
+                        lastUpdated: now
+                    },
+
+                    $push: {
+                        statusHistory: {
+                            status,
+                            date: now.toISOString()
+                        }
+                    }
+                }
+            );
+
+            if (result.matchedCount === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Complaint not found."
+                });
+            }
+
+            res.json({
+                success: true,
+                message: "Complaint status updated successfully."
+            });
+
+        } catch (error) {
+            console.error("Updating complaint status error:", error);
+
+            res.status(500).json({
                 success: false,
-                message: "Invalid complaint status."
+                message: "Unable to update complaint status."
             });
         }
-
-        const result = await complaintsCollection.updateOne(
-            { complaintId: req.params.id },
-            { $set: { status } }
-        );
-
-        if (result.matchedCount === 0) {
-            return res.status(404).json({
-                success: false,
-                message: "Complaint not found."
-            });
-        }
-
-        res.json({
-            success: true,
-            message: "Complaint status updated."
-        });
-    } catch (error) {
-        console.error("Updating complaint status error:", error);
-        res.status(500).json({
-            success: false,
-            message: "Unable to update complaint status."
-        });
     }
-});
+);
+
+
+// =====================================================
+// START SERVER
+// =====================================================
 
 async function startServer() {
     if (!MONGODB_URI) {
@@ -302,6 +416,7 @@ async function startServer() {
         await client.connect();
 
         const database = client.db("jansahayak");
+
         complaintsCollection = database.collection("complaints");
 
         console.log("MONGODB CONNECTED");
@@ -312,8 +427,10 @@ async function startServer() {
             console.log("JANSAHAYAK BACKEND");
             console.log("Server running on port:", PORT);
         });
+
     } catch (error) {
         console.error("MongoDB connection failed:", error);
+
         process.exit(1);
     }
 }
