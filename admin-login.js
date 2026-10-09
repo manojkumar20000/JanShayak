@@ -45,7 +45,7 @@ event.preventDefault();
 
         sessionStorage.setItem("janSahayakAdminLoggedIn", "true");
         sessionStorage.setItem("janSahayakAdminToken", token);
-
+        console.log("Admin token saved:", !!sessionStorage.getItem("janSahayakAdminToken"));
         message.textContent = "Login successful! Opening dashboard...";
         message.className = "login-message success";
 
