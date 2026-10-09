@@ -1,438 +1,276 @@
-"use strict";
+<!DOCTYPE html>
 
-const express = require("express");
-const cors = require("cors");
-const crypto = require("crypto");
-const { MongoClient } = require("mongodb");
+<html lang="en">
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-app.use(cors());
+```
+<title>JanSahayak - Admin Dashboard</title>
 
-app.use(express.json({
-    limit: "10mb"
-}));
+<link rel="stylesheet" href="style.css">
+```
 
-const MONGODB_URI = process.env.MONGODB_URI;
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-const TOKEN_SECRET = process.env.TOKEN_SECRET;
+</head>
 
-let complaintsCollection;
+<body>
 
-const activeTokens = new Map();
+```
+<header class="main-header">
+    <div class="logo">
+        <h1>JanSahayak</h1>
+        <p>Citizen Problem Portal</p>
+    </div>
 
-const ALLOWED_STATUSES = [
-    "Pending",
-    "In Progress",
-    "Resolved",
-    "Rejected"
-];
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="index.html#report-section">Report Problem</a>
+        <a href="index.html#track-section">Track Complaint</a>
 
+        <button type="button" id="logoutButton" class="admin-logout-btn">
+            Logout
+        </button>
+    </nav>
+</header>
 
-// =====================================================
-// TOKEN CREATION
-// =====================================================
+<main class="admin-dashboard">
 
-function createToken(username) {
-    const expires = Date.now() + 8 * 60 * 60 * 1000;
+    <div class="admin-title">
+        <h1>Admin Dashboard</h1>
+        <p>Manage and monitor citizen complaints</p>
+    </div>
 
-    const payload = Buffer.from(
-        JSON.stringify({
-            username,
-            expires
-        })
-    ).toString("base64url");
+    <section class="dashboard-stats">
 
-    const signature = crypto
-        .createHmac("sha256", TOKEN_SECRET)
-        .update(payload)
-        .digest("base64url");
+        <div class="stat-card">
+            <h3>Total Complaints</h3>
+            <p id="totalComplaints">0</p>
+        </div>
 
-    const token = payload + "." + signature;
+        <div class="stat-card">
+            <h3>Pending</h3>
+            <p id="reportedComplaints">0</p>
+        </div>
 
-    activeTokens.set(token, expires);
+        <div class="stat-card">
+            <h3>In Progress</h3>
+            <p id="progressComplaints">0</p>
+        </div>
 
-    return token;
-}
+        <div class="stat-card">
+            <h3>Resolved</h3>
+            <p id="resolvedComplaints">0</p>
+        </div>
 
+    </section>
 
-// =====================================================
-// ADMIN AUTHENTICATION
-// =====================================================
+    <section class="analytics-section">
+        <h2>Complaint Analytics</h2>
 
-function verifyAdmin(req, res, next) {
-    const authorization = req.headers.authorization || "";
+        <div class="analytics-grid">
 
-    const token = authorization.startsWith("Bearer ")
-        ? authorization.slice(7)
-        : "";
+            <div class="analytics-card">
+                <h3>Road</h3>
+                <p id="roadCount">0</p>
+            </div>
 
-    const expires = activeTokens.get(token);
+            <div class="analytics-card">
+                <h3>Garbage</h3>
+                <p id="garbageCount">0</p>
+            </div>
 
-    if (!token || !expires || expires < Date.now()) {
-        activeTokens.delete(token);
+            <div class="analytics-card">
+                <h3>Street Light</h3>
+                <p id="streetLightCount">0</p>
+            </div>
 
-        return res.status(401).json({
-            success: false,
-            message: "Please login again."
-        });
-    }
+            <div class="analytics-card">
+                <h3>Water</h3>
+                <p id="waterCount">0</p>
+            </div>
 
-    try {
-        const parts = token.split(".");
+            <div class="analytics-card">
+                <h3>Other</h3>
+                <p id="otherCount">0</p>
+            </div>
 
-        if (parts.length !== 2) {
-            throw new Error("Invalid token");
+        </div>
+
+        <div class="category-chart">
+            <h3>Category Distribution</h3>
+
+            <div class="chart-row">
+                <span>Road</span>
+                <div class="chart-bar">
+                    <div id="roadBar"></div>
+                </div>
+                <strong id="roadChartNumber">0</strong>
+            </div>
+
+            <div class="chart-row">
+                <span>Garbage</span>
+                <div class="chart-bar">
+                    <div id="garbageBar"></div>
+                </div>
+                <strong id="garbageChartNumber">0</strong>
+            </div>
+
+            <div class="chart-row">
+                <span>Street Light</span>
+                <div class="chart-bar">
+                    <div id="streetLightBar"></div>
+                </div>
+                <strong id="streetLightChartNumber">0</strong>
+            </div>
+
+            <div class="chart-row">
+                <span>Water</span>
+                <div class="chart-bar">
+                    <div id="waterBar"></div>
+                </div>
+                <strong id="waterChartNumber">0</strong>
+            </div>
+
+            <div class="chart-row">
+                <span>Other</span>
+                <div class="chart-bar">
+                    <div id="otherBar"></div>
+                </div>
+                <strong id="otherChartNumber">0</strong>
+            </div>
+        </div>
+    </section>
+
+    <section class="admin-search-section">
+        <h2>Search Complaints</h2>
+
+        <div class="admin-search-box">
+
+            <input
+                type="text"
+                id="searchComplaint"
+                placeholder="Search by ID, name, mobile or area"
+                oninput="filterComplaints()">
+
+            <select id="statusFilter" onchange="filterComplaints()">
+                <option value="">All Statuses</option>
+                <option value="Pending">Pending</option>
+                <option value="Reported">Reported (Old)</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Resolved">Resolved</option>
+                <option value="Rejected">Rejected</option>
+            </select>
+
+            <select id="categoryFilter" onchange="filterComplaints()">
+                <option value="">All Categories</option>
+                <option value="Road">Road</option>
+                <option value="Garbage">Garbage</option>
+                <option value="Street Light">Street Light</option>
+                <option value="Water">Water</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <button type="button" id="resetFiltersButton">
+                Reset
+            </button>
+
+        </div>
+    </section>
+
+    <section class="admin-complaints">
+        <h2>All Complaints</h2>
+
+        <div id="adminComplaintList" aria-live="polite">
+            <p>Loading complaints...</p>
+        </div>
+    </section>
+
+    <div
+        id="complaintDetailsModal"
+        class="complaint-modal"
+        style="display: none;">
+
+        <div class="complaint-modal-content">
+
+            <div class="complaint-modal-header">
+                <h2>Complaint Details</h2>
+
+                <button
+                    type="button"
+                    class="modal-close-btn"
+                    id="closeModalTop">
+                    ×
+                </button>
+            </div>
+
+            <div id="complaintDetailsContent">
+                <p>Loading details...</p>
+            </div>
+
+            <div class="modal-status-section">
+
+                <input type="hidden" id="modalComplaintId">
+
+                <label for="modalStatus">
+                    <strong>Change Status:</strong>
+                </label>
+
+                <select id="modalStatus">
+                    <option value="Pending">Pending</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Resolved">Resolved</option>
+                    <option value="Rejected">Rejected</option>
+                </select>
+
+                <button
+                    type="button"
+                    id="updateStatusButton">
+                    Update Status
+                </button>
+
+            </div>
+
+            <div class="complaint-modal-footer">
+                <button
+                    type="button"
+                    class="modal-close-button"
+                    id="closeModalBottom">
+                    Close
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+</main>
+
+<script>
+    (function () {
+        const loggedIn =
+            sessionStorage.getItem("janSahayakAdminLoggedIn");
+
+        const token =
+            sessionStorage.getItem("janSahayakAdminToken");
+
+        if (loggedIn !== "true" || !token) {
+            sessionStorage.removeItem("janSahayakAdminLoggedIn");
+            sessionStorage.removeItem("janSahayakAdminToken");
+
+            window.location.replace("admin-login.html");
         }
+    })();
 
-        const expectedSignature = crypto
-            .createHmac("sha256", TOKEN_SECRET)
-            .update(parts[0])
-            .digest("base64url");
+    document.getElementById("logoutButton").addEventListener("click", function () {
+        sessionStorage.removeItem("janSahayakAdminLoggedIn");
+        sessionStorage.removeItem("janSahayakAdminToken");
 
-        const actualBuffer = Buffer.from(parts[1]);
-        const expectedBuffer = Buffer.from(expectedSignature);
-
-        if (
-            actualBuffer.length !== expectedBuffer.length ||
-            !crypto.timingSafeEqual(actualBuffer, expectedBuffer)
-        ) {
-            throw new Error("Invalid signature");
-        }
-
-        const payload = JSON.parse(
-            Buffer.from(parts[0], "base64url").toString("utf8")
-        );
-
-        if (payload.expires < Date.now()) {
-            activeTokens.delete(token);
-            throw new Error("Expired token");
-        }
-
-        req.admin = payload;
-
-        next();
-
-    } catch (error) {
-        activeTokens.delete(token);
-
-        return res.status(401).json({
-            success: false,
-            message: "Invalid or expired login. Please login again."
-        });
-    }
-}
-
-
-// =====================================================
-// HEALTH CHECK
-// =====================================================
-
-app.get("/", (req, res) => {
-    res.send("JanSahayak Backend is Running!");
-});
-
-app.get("/api/test", (req, res) => {
-    res.json({
-        success: true,
-        message: "JanSahayak API is working"
+        window.location.replace("admin-login.html");
     });
-});
+</script>
 
+<script src="admin.js?v=4"></script>
+```
 
-// =====================================================
-// ADMIN LOGIN
-// =====================================================
-
-app.post("/api/admin/login", (req, res) => {
-    const { username, password } = req.body || {};
-
-    if (!ADMIN_USERNAME || !ADMIN_PASSWORD || !TOKEN_SECRET) {
-        return res.status(500).json({
-            success: false,
-            message: "Admin login environment variables are missing."
-        });
-    }
-
-    if (
-        typeof username !== "string" ||
-        typeof password !== "string" ||
-        username !== ADMIN_USERNAME ||
-        password !== ADMIN_PASSWORD
-    ) {
-        return res.status(401).json({
-            success: false,
-            message: "Incorrect username or password."
-        });
-    }
-
-    const token = createToken(username);
-
-    res.json({
-        success: true,
-        message: "Login successful.",
-        token
-    });
-});
-
-
-// =====================================================
-// SUBMIT COMPLAINT
-// =====================================================
-
-app.post("/api/complaints", async (req, res) => {
-    try {
-        const {
-            citizenName,
-            citizenMobile,
-            problemCategory,
-            problemArea,
-            problemDescription,
-            problemPhoto
-        } = req.body || {};
-
-        if (
-            !citizenName ||
-            !citizenMobile ||
-            !problemCategory ||
-            !problemArea ||
-            !problemDescription
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "Please fill in all required fields."
-            });
-        }
-
-        const now = new Date();
-
-        const complaint = {
-            complaintId: "JS" + crypto.randomBytes(4).toString("hex").toUpperCase(),
-
-            citizenName,
-            citizenMobile,
-
-            category: problemCategory,
-            area: problemArea,
-            description: problemDescription,
-
-            photo: typeof problemPhoto === "string"
-                ? problemPhoto
-                : "",
-
-            status: "Pending",
-
-            priority: ["Road", "Water"].includes(problemCategory)
-                ? "High"
-                : ["Garbage", "Street Light"].includes(problemCategory)
-                    ? "Medium"
-                    : "Low",
-
-            createdAt: now,
-            lastUpdated: now,
-
-            statusHistory: [
-                {
-                    status: "Pending",
-                    date: now.toISOString()
-                }
-            ]
-        };
-
-        await complaintsCollection.insertOne(complaint);
-
-        res.status(201).json({
-            success: true,
-            message: "Complaint submitted successfully.",
-            complaintId: complaint.complaintId
-        });
-
-    } catch (error) {
-        console.error("Complaint submission error:", error);
-
-        res.status(500).json({
-            success: false,
-            message: "Unable to submit complaint."
-        });
-    }
-});
-
-
-// =====================================================
-// TRACK A COMPLAINT
-// =====================================================
-
-app.get("/api/complaints/:id", async (req, res) => {
-    try {
-        const complaint = await complaintsCollection.findOne({
-            complaintId: req.params.id
-        });
-
-        if (!complaint) {
-            return res.status(404).json({
-                success: false,
-                message: "Complaint not found."
-            });
-        }
-
-        res.json({
-            success: true,
-
-            complaint: {
-                complaintId: complaint.complaintId,
-                category: complaint.category,
-                area: complaint.area,
-                description: complaint.description,
-                status: complaint.status,
-                priority: complaint.priority,
-                createdAt: complaint.createdAt,
-                lastUpdated: complaint.lastUpdated
-            }
-        });
-
-    } catch (error) {
-        console.error("Complaint tracking error:", error);
-
-        res.status(500).json({
-            success: false,
-            message: "Unable to track complaint."
-        });
-    }
-});
-
-
-// =====================================================
-// GET ALL COMPLAINTS - ADMIN ONLY
-// =====================================================
-
-app.get("/api/complaints", verifyAdmin, async (req, res) => {
-    try {
-        const complaints = await complaintsCollection
-            .find({})
-            .sort({
-                createdAt: -1
-            })
-            .toArray();
-
-        res.json({
-            success: true,
-            complaints
-        });
-
-    } catch (error) {
-        console.error("Fetching complaints error:", error);
-
-        res.status(500).json({
-            success: false,
-            message: "Unable to fetch complaints."
-        });
-    }
-});
-
-
-// =====================================================
-// UPDATE COMPLAINT STATUS - ADMIN ONLY
-// =====================================================
-
-app.patch(
-    "/api/complaints/:id/status",
-    verifyAdmin,
-    async (req, res) => {
-        try {
-            const { status } = req.body || {};
-
-            if (!ALLOWED_STATUSES.includes(status)) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Invalid complaint status."
-                });
-            }
-
-            const now = new Date();
-
-            const result = await complaintsCollection.updateOne(
-                {
-                    complaintId: req.params.id
-                },
-                {
-                    $set: {
-                        status,
-                        lastUpdated: now
-                    },
-
-                    $push: {
-                        statusHistory: {
-                            status,
-                            date: now.toISOString()
-                        }
-                    }
-                }
-            );
-
-            if (result.matchedCount === 0) {
-                return res.status(404).json({
-                    success: false,
-                    message: "Complaint not found."
-                });
-            }
-
-            res.json({
-                success: true,
-                message: "Complaint status updated successfully."
-            });
-
-        } catch (error) {
-            console.error("Updating complaint status error:", error);
-
-            res.status(500).json({
-                success: false,
-                message: "Unable to update complaint status."
-            });
-        }
-    }
-);
-
-
-// =====================================================
-// START SERVER
-// =====================================================
-
-async function startServer() {
-    if (!MONGODB_URI) {
-        console.error("Missing MONGODB_URI environment variable.");
-        process.exit(1);
-    }
-
-    if (!TOKEN_SECRET) {
-        console.error("Missing TOKEN_SECRET environment variable.");
-        process.exit(1);
-    }
-
-    const client = new MongoClient(MONGODB_URI);
-
-    try {
-        await client.connect();
-
-        const database = client.db("jansahayak");
-
-        complaintsCollection = database.collection("complaints");
-
-        console.log("MONGODB CONNECTED");
-        console.log("Database: jansahayak");
-        console.log("Collection: complaints");
-
-        app.listen(PORT, "0.0.0.0", () => {
-            console.log("JANSAHAYAK BACKEND");
-            console.log("Server running on port:", PORT);
-        });
-
-    } catch (error) {
-        console.error("MongoDB connection failed:", error);
-
-        process.exit(1);
-    }
-}
-
-startServer();
+</body>
+</html>
