@@ -1,4 +1,4 @@
-```javascript
+
 const BACKEND_URL = "https://janshayak-backend.onrender.com";
 
 let allComplaints = [];
