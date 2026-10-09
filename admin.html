@@ -1,17 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>JanSahayak - Admin Dashboard</title>
-
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
+```
 <header class="main-header">
     <div class="logo">
         <h1>JanSahayak</h1>
@@ -26,13 +26,11 @@
         <button
             type="button"
             onclick="adminLogout()"
-            class="admin-logout-btn"
-        >
+            class="admin-logout-btn">
             Logout
         </button>
     </nav>
 </header>
-
 
 <main class="admin-dashboard">
 
@@ -41,9 +39,7 @@
         <p>Manage and monitor citizen complaints</p>
     </div>
 
-
     <!-- DASHBOARD STATS -->
-
     <section class="dashboard-stats">
 
         <div class="stat-card">
@@ -68,11 +64,8 @@
 
     </section>
 
-
     <!-- ANALYTICS -->
-
     <section class="analytics-section">
-
         <h2>Complaint Analytics</h2>
 
         <div class="analytics-grid">
@@ -104,9 +97,8 @@
 
         </div>
 
-
+        <!-- CATEGORY CHART -->
         <div class="category-chart">
-
             <h3>Category Distribution</h3>
 
             <div class="chart-row">
@@ -150,14 +142,10 @@
             </div>
 
         </div>
-
     </section>
 
-
     <!-- SEARCH AND FILTER -->
-
     <section class="admin-search-section">
-
         <h2>Search Complaints</h2>
 
         <div class="admin-search-box">
@@ -166,13 +154,9 @@
                 type="text"
                 id="searchComplaint"
                 placeholder="Search by ID, name, mobile or area"
-                oninput="filterComplaints()"
-            >
+                oninput="filterComplaints()">
 
-            <select
-                id="statusFilter"
-                onchange="filterComplaints()"
-            >
+            <select id="statusFilter" onchange="filterComplaints()">
                 <option value="">All Statuses</option>
                 <option value="Pending">Pending</option>
                 <option value="Reported">Reported (Old)</option>
@@ -181,10 +165,7 @@
                 <option value="Rejected">Rejected</option>
             </select>
 
-            <select
-                id="categoryFilter"
-                onchange="filterComplaints()"
-            >
+            <select id="categoryFilter" onchange="filterComplaints()">
                 <option value="">All Categories</option>
                 <option value="Road">Road</option>
                 <option value="Garbage">Garbage</option>
@@ -198,61 +179,44 @@
             </button>
 
         </div>
-
     </section>
 
-
     <!-- ALL COMPLAINTS -->
-
     <section class="admin-complaints">
-
         <h2>All Complaints</h2>
 
         <div id="adminComplaintList">
             <p>Loading complaints...</p>
         </div>
-
     </section>
 
-
     <!-- COMPLAINT DETAILS MODAL -->
-
     <div
         id="complaintDetailsModal"
         class="complaint-modal"
-        style="display:none;"
-    >
+        style="display: none;">
 
         <div class="complaint-modal-content">
 
             <div class="complaint-modal-header">
-
                 <h2>Complaint Details</h2>
 
                 <button
                     type="button"
                     class="modal-close-btn"
-                    onclick="closeComplaintDetails()"
-                >
+                    onclick="closeComplaintDetails()">
                     ×
                 </button>
-
             </div>
-
 
             <div id="complaintDetailsContent">
                 <p>Loading details...</p>
             </div>
 
-
             <!-- STATUS CHANGE -->
-
             <div class="modal-status-section">
 
-                <input
-                    type="hidden"
-                    id="modalComplaintId"
-                >
+                <input type="hidden" id="modalComplaintId">
 
                 <label for="modalStatus">
                     <strong>Change Status:</strong>
@@ -267,63 +231,54 @@
 
                 <button
                     type="button"
-                    onclick="updateComplaintStatusFromModal()"
-                >
+                    onclick="updateComplaintStatusFromModal()">
                     Update Status
                 </button>
 
             </div>
 
-
             <div class="complaint-modal-footer">
-
                 <button
                     type="button"
                     class="modal-close-button"
-                    onclick="closeComplaintDetails()"
-                >
+                    onclick="closeComplaintDetails()">
                     Close
                 </button>
-
             </div>
 
         </div>
-
     </div>
 
 </main>
 
-
 <!-- ADMIN AUTHENTICATION -->
-
 <script>
-(function () {
-    const loggedIn =
-        sessionStorage.getItem("janSahayakAdminLoggedIn");
+    (function () {
+        const loggedIn =
+            sessionStorage.getItem("janSahayakAdminLoggedIn");
 
-    const token =
-        sessionStorage.getItem("janSahayakAdminToken");
+        const token =
+            sessionStorage.getItem("janSahayakAdminToken");
 
-    if (loggedIn !== "true" || !token) {
+        if (loggedIn !== "true" || !token) {
+            sessionStorage.removeItem("janSahayakAdminLoggedIn");
+            sessionStorage.removeItem("janSahayakAdminToken");
+
+            window.location.replace("admin-login.html");
+        }
+    })();
+
+    function adminLogout() {
         sessionStorage.removeItem("janSahayakAdminLoggedIn");
         sessionStorage.removeItem("janSahayakAdminToken");
 
         window.location.replace("admin-login.html");
     }
-})();
-
-function adminLogout() {
-    sessionStorage.removeItem("janSahayakAdminLoggedIn");
-    sessionStorage.removeItem("janSahayakAdminToken");
-
-    window.location.replace("admin-login.html");
-}
 </script>
 
-
-<!-- Updated filename query helps avoid an old cached copy. -->
-
+<!-- ADMIN JAVASCRIPT -->
 <script src="admin.js?v=3"></script>
+```
 
 </body>
 </html>
