@@ -1,276 +1,322 @@
-<!DOCTYPE html>
+require("dotenv").config();
 
-<html lang="en">
+const express = require("express");
+const cors = require("cors");
+const crypto = require("crypto");
+const { MongoClient } = require("mongodb");
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+const app = express();
 
-```
-<title>JanSahayak - Admin Dashboard</title>
+const PORT = process.env.PORT || 3000;
+const MONGODB_URI =
+    process.env.MONGODB_URI || process.env.MONGO_URI;
+const DB_NAME = process.env.MONGODB_DB || "jansahayak";
 
-<link rel="stylesheet" href="style.css">
-```
+let complaintsCollection;
+const adminTokens = new Set();
 
-</head>
+const ALLOWED_STATUSES = [
+    "Pending",
+    "Reported",
+    "In Progress",
+    "Resolved",
+    "Rejected"
+];
 
-<body>
+app.use(cors());
+app.use(express.json({ limit: "10mb" }));
 
-```
-<header class="main-header">
-    <div class="logo">
-        <h1>JanSahayak</h1>
-        <p>Citizen Problem Portal</p>
-    </div>
+// HOME
+app.get("/", (req, res) => {
+    res.send("JanSahayak Backend is Running!");
+});
 
-    <nav>
-        <a href="index.html">Home</a>
-        <a href="index.html#report-section">Report Problem</a>
-        <a href="index.html#track-section">Track Complaint</a>
-
-        <button type="button" id="logoutButton" class="admin-logout-btn">
-            Logout
-        </button>
-    </nav>
-</header>
-
-<main class="admin-dashboard">
-
-    <div class="admin-title">
-        <h1>Admin Dashboard</h1>
-        <p>Manage and monitor citizen complaints</p>
-    </div>
-
-    <section class="dashboard-stats">
-
-        <div class="stat-card">
-            <h3>Total Complaints</h3>
-            <p id="totalComplaints">0</p>
-        </div>
-
-        <div class="stat-card">
-            <h3>Pending</h3>
-            <p id="reportedComplaints">0</p>
-        </div>
-
-        <div class="stat-card">
-            <h3>In Progress</h3>
-            <p id="progressComplaints">0</p>
-        </div>
-
-        <div class="stat-card">
-            <h3>Resolved</h3>
-            <p id="resolvedComplaints">0</p>
-        </div>
-
-    </section>
-
-    <section class="analytics-section">
-        <h2>Complaint Analytics</h2>
-
-        <div class="analytics-grid">
-
-            <div class="analytics-card">
-                <h3>Road</h3>
-                <p id="roadCount">0</p>
-            </div>
-
-            <div class="analytics-card">
-                <h3>Garbage</h3>
-                <p id="garbageCount">0</p>
-            </div>
-
-            <div class="analytics-card">
-                <h3>Street Light</h3>
-                <p id="streetLightCount">0</p>
-            </div>
-
-            <div class="analytics-card">
-                <h3>Water</h3>
-                <p id="waterCount">0</p>
-            </div>
-
-            <div class="analytics-card">
-                <h3>Other</h3>
-                <p id="otherCount">0</p>
-            </div>
-
-        </div>
-
-        <div class="category-chart">
-            <h3>Category Distribution</h3>
-
-            <div class="chart-row">
-                <span>Road</span>
-                <div class="chart-bar">
-                    <div id="roadBar"></div>
-                </div>
-                <strong id="roadChartNumber">0</strong>
-            </div>
-
-            <div class="chart-row">
-                <span>Garbage</span>
-                <div class="chart-bar">
-                    <div id="garbageBar"></div>
-                </div>
-                <strong id="garbageChartNumber">0</strong>
-            </div>
-
-            <div class="chart-row">
-                <span>Street Light</span>
-                <div class="chart-bar">
-                    <div id="streetLightBar"></div>
-                </div>
-                <strong id="streetLightChartNumber">0</strong>
-            </div>
-
-            <div class="chart-row">
-                <span>Water</span>
-                <div class="chart-bar">
-                    <div id="waterBar"></div>
-                </div>
-                <strong id="waterChartNumber">0</strong>
-            </div>
-
-            <div class="chart-row">
-                <span>Other</span>
-                <div class="chart-bar">
-                    <div id="otherBar"></div>
-                </div>
-                <strong id="otherChartNumber">0</strong>
-            </div>
-        </div>
-    </section>
-
-    <section class="admin-search-section">
-        <h2>Search Complaints</h2>
-
-        <div class="admin-search-box">
-
-            <input
-                type="text"
-                id="searchComplaint"
-                placeholder="Search by ID, name, mobile or area"
-                oninput="filterComplaints()">
-
-            <select id="statusFilter" onchange="filterComplaints()">
-                <option value="">All Statuses</option>
-                <option value="Pending">Pending</option>
-                <option value="Reported">Reported (Old)</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Resolved">Resolved</option>
-                <option value="Rejected">Rejected</option>
-            </select>
-
-            <select id="categoryFilter" onchange="filterComplaints()">
-                <option value="">All Categories</option>
-                <option value="Road">Road</option>
-                <option value="Garbage">Garbage</option>
-                <option value="Street Light">Street Light</option>
-                <option value="Water">Water</option>
-                <option value="Other">Other</option>
-            </select>
-
-            <button type="button" id="resetFiltersButton">
-                Reset
-            </button>
-
-        </div>
-    </section>
-
-    <section class="admin-complaints">
-        <h2>All Complaints</h2>
-
-        <div id="adminComplaintList" aria-live="polite">
-            <p>Loading complaints...</p>
-        </div>
-    </section>
-
-    <div
-        id="complaintDetailsModal"
-        class="complaint-modal"
-        style="display: none;">
-
-        <div class="complaint-modal-content">
-
-            <div class="complaint-modal-header">
-                <h2>Complaint Details</h2>
-
-                <button
-                    type="button"
-                    class="modal-close-btn"
-                    id="closeModalTop">
-                    ×
-                </button>
-            </div>
-
-            <div id="complaintDetailsContent">
-                <p>Loading details...</p>
-            </div>
-
-            <div class="modal-status-section">
-
-                <input type="hidden" id="modalComplaintId">
-
-                <label for="modalStatus">
-                    <strong>Change Status:</strong>
-                </label>
-
-                <select id="modalStatus">
-                    <option value="Pending">Pending</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Resolved">Resolved</option>
-                    <option value="Rejected">Rejected</option>
-                </select>
-
-                <button
-                    type="button"
-                    id="updateStatusButton">
-                    Update Status
-                </button>
-
-            </div>
-
-            <div class="complaint-modal-footer">
-                <button
-                    type="button"
-                    class="modal-close-button"
-                    id="closeModalBottom">
-                    Close
-                </button>
-            </div>
-
-        </div>
-    </div>
-
-</main>
-
-<script>
-    (function () {
-        const loggedIn =
-            sessionStorage.getItem("janSahayakAdminLoggedIn");
-
-        const token =
-            sessionStorage.getItem("janSahayakAdminToken");
-
-        if (loggedIn !== "true" || !token) {
-            sessionStorage.removeItem("janSahayakAdminLoggedIn");
-            sessionStorage.removeItem("janSahayakAdminToken");
-
-            window.location.replace("admin-login.html");
-        }
-    })();
-
-    document.getElementById("logoutButton").addEventListener("click", function () {
-        sessionStorage.removeItem("janSahayakAdminLoggedIn");
-        sessionStorage.removeItem("janSahayakAdminToken");
-
-        window.location.replace("admin-login.html");
+// API TEST
+app.get("/api/test", (req, res) => {
+    res.json({
+        success: true,
+        message: "JanSahayak API is working"
     });
-</script>
+});
 
-<script src="admin.js?v=4"></script>
-```
+// ADMIN AUTHENTICATION
+function requireAdmin(req, res, next) {
+    const authHeader = req.headers.authorization || "";
+    const token = authHeader.startsWith("Bearer ")
+        ? authHeader.slice(7)
+        : "";
 
-</body>
-</html>
+    if (!token || !adminTokens.has(token)) {
+        return res.status(401).json({
+            success: false,
+            message: "Admin login required"
+        });
+    }
+
+    next();
+}
+
+// ADMIN LOGIN
+app.post("/api/admin/login", (req, res) => {
+    const username = String(req.body?.username || "");
+    const password = String(req.body?.password || "");
+
+    const adminUsername = process.env.ADMIN_USERNAME;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+
+    if (!adminUsername || !adminPassword) {
+        return res.status(503).json({
+            success: false,
+            message: "Admin credentials are not configured"
+        });
+    }
+
+    if (
+        username !== adminUsername ||
+        password !== adminPassword
+    ) {
+        return res.status(401).json({
+            success: false,
+            message: "Invalid username or password"
+        });
+    }
+
+    const token = crypto.randomBytes(32).toString("hex");
+    adminTokens.add(token);
+
+    res.json({
+        success: true,
+        message: "Login successful",
+        token
+    });
+});
+
+// PRIORITY
+function getPriority(category) {
+    const value = String(category || "").toLowerCase();
+
+    if (value === "road" || value === "water") {
+        return "High";
+    }
+
+    if (value === "garbage" || value === "street light") {
+        return "Medium";
+    }
+
+    return "Low";
+}
+
+// SUBMIT COMPLAINT
+app.post("/api/complaints", async (req, res) => {
+    try {
+        const body = req.body || {};
+
+        const name = String(
+            body.citizenName || body.name || ""
+        ).trim();
+
+        const mobile = String(
+            body.citizenMobile || body.mobile || ""
+        ).trim();
+
+        const category = String(
+            body.problemCategory || body.category || ""
+        ).trim();
+
+        const area = String(
+            body.problemArea || body.area || body.location || ""
+        ).trim();
+
+        const description = String(
+            body.problemDescription || body.description || ""
+        ).trim();
+
+        const photo = body.problemPhoto || body.photo || "";
+
+        if (!name || !mobile || !category || !area || !description) {
+            return res.status(400).json({
+                success: false,
+                message: "Please fill in all required fields"
+            });
+        }
+
+        const now = new Date().toISOString();
+
+        const complaint = {
+            complaintId: "JS" + crypto.randomInt(100000, 1000000),
+            name,
+            mobile,
+            category,
+            area,
+            description,
+            photo,
+            priority: getPriority(category),
+            status: "Reported",
+            department: "",
+            date: now,
+            createdAt: now,
+            lastUpdated: now,
+            statusHistory: [
+                {
+                    status: "Reported",
+                    date: now
+                }
+            ]
+        };
+
+        await complaintsCollection.insertOne(complaint);
+
+        res.status(201).json({
+            success: true,
+            message: "Complaint submitted successfully",
+            complaintId: complaint.complaintId,
+            complaint
+        });
+    } catch (error) {
+        console.error("Submit complaint error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Could not submit complaint"
+        });
+    }
+});
+
+// TRACK COMPLAINT
+async function trackComplaint(req, res) {
+    try {
+        const complaint = await complaintsCollection.findOne({
+            complaintId: String(req.params.complaintId).trim()
+        });
+
+        if (!complaint) {
+            return res.status(404).json({
+                success: false,
+                message: "Complaint not found"
+            });
+        }
+
+        const { _id, ...result } = complaint;
+
+        res.json({
+            success: true,
+            complaint: result
+        });
+    } catch (error) {
+        console.error("Track complaint error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Could not track complaint"
+        });
+    }
+}
+
+app.get("/api/complaints/track/:complaintId", trackComplaint);
+app.get("/api/complaints/:complaintId", trackComplaint);
+
+// ADMIN: GET ALL COMPLAINTS
+app.get("/api/complaints", requireAdmin, async (req, res) => {
+    try {
+        const complaints = await complaintsCollection
+            .find({})
+            .sort({ createdAt: -1 })
+            .toArray();
+
+        res.json({
+            success: true,
+            complaints: complaints.map(({ _id, ...item }) => item)
+        });
+    } catch (error) {
+        console.error("Fetch complaints error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Could not load complaints"
+        });
+    }
+});
+
+// ADMIN: UPDATE STATUS
+app.patch(
+    "/api/complaints/:complaintId/status",
+    requireAdmin,
+    async (req, res) => {
+        try {
+            const status = req.body?.status;
+
+            if (!ALLOWED_STATUSES.includes(status)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid complaint status"
+                });
+            }
+
+            const now = new Date().toISOString();
+
+            const result = await complaintsCollection.updateOne(
+                { complaintId: req.params.complaintId },
+                {
+                    $set: {
+                        status,
+                        lastUpdated: now
+                    },
+                    $push: {
+                        statusHistory: {
+                            status,
+                            date: now
+                        }
+                    }
+                }
+            );
+
+            if (result.matchedCount === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Complaint not found"
+                });
+            }
+
+            res.json({
+                success: true,
+                message: "Complaint status updated",
+                status
+            });
+        } catch (error) {
+            console.error("Update status error:", error);
+
+            res.status(500).json({
+                success: false,
+                message: "Could not update complaint status"
+            });
+        }
+    }
+);
+
+// START SERVER
+async function startServer() {
+    if (!MONGODB_URI) {
+        throw new Error(
+            "MONGODB_URI is missing in Render Environment"
+        );
+    }
+
+    const client = new MongoClient(MONGODB_URI);
+
+    await client.connect();
+
+    const database = client.db(DB_NAME);
+    complaintsCollection = database.collection("complaints");
+
+    console.log("MongoDB connected successfully");
+    console.log("Database:", DB_NAME);
+
+    app.listen(PORT, "0.0.0.0", () => {
+        console.log(`JanSahayak backend running on port ${PORT}`);
+    });
+}
+
+startServer().catch((error) => {
+    console.error("Backend startup failed:", error);
+    process.exit(1);
+});
